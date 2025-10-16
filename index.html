@@ -183,7 +183,7 @@
         detailImg.src = p.imagen;
         detailLore.textContent = p.lore;
 
-        // cambiar estilo del panel grande
+        
         detailBox.className = "detail-box";
         detailBox.classList.add(`detail-${p.clase}`);
       });
@@ -191,7 +191,7 @@
       grid.appendChild(div);
     });
 
-    // selecciona el primero por defecto
+
     document.querySelector(".character")?.click();
   </script>
 </body>
