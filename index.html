@@ -1,14 +1,23 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Selección de Personaje</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Selección de Personaje con Sketchfab</title>
+
   <style>
-    
+    /* ---- VIDEO DE FONDO ---- */
+    #video-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      z-index: -1;
+    }
+
     body {
-      background: url("Fondo2.jpg") no-repeat center center fixed;
-      background-size: cover;
       color: white;
       font-family: monospace;
       margin: 0;
@@ -25,7 +34,6 @@
       text-shadow: 0 0 10px #000;
       margin-top: 20px;
     }
-
     .container {
       display: flex;
       flex-wrap: wrap;
@@ -40,8 +48,6 @@
       width: 90%;
       max-width: 1200px;
     }
-
-    
     .character-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -49,7 +55,6 @@
       flex: 1;
       min-width: 300px;
     }
-
     .character {
       background-color: #1a1a1a;
       border: 2px solid #555;
@@ -62,34 +67,25 @@
       height: 130px;
       margin: auto;
     }
-
     .character:hover {
       transform: scale(1.05);
       background-color: #222;
     }
-
     .character img {
       width: 100%;
       height: 90px;
       object-fit: contain;
       border-radius: 4px;
-      image-rendering: pixelated;
     }
-
     .character p {
       margin-top: 5px;
       font-size: 13px;
       color: #ccc;
     }
-
-    .selected.knight { border-color: #00bfff; box-shadow: 0 0 15px #00bfff; }
-    .selected.mage { border-color: #b066ff; box-shadow: 0 0 15px #b066ff; }
-    .selected.archer { border-color: #00ff88; box-shadow: 0 0 15px #00ff88; }
-    .selected.robot { border-color: #bbbbbb; box-shadow: 0 0 15px #bbbbbb; }
-    .selected.assassin { border-color: #ff3333; box-shadow: 0 0 15px #ff3333; }
-    .selected.paladin { border-color: #ffd700; box-shadow: 0 0 15px #ffd700; }
-    .selected.necromancer { border-color: #9933ff; box-shadow: 0 0 15px #9933ff; }
-    .selected.cyborg { border-color: #00ffff; box-shadow: 0 0 15px #00ffff; }
+    .selected {
+      border-color: #ffcc00;
+      box-shadow: 0 0 15px #ffcc00;
+    }
 
     .detail-box {
       flex: 1;
@@ -102,10 +98,12 @@
       transition: 0.4s;
     }
 
-    .detail-box img {
-      width: 80%;
+    iframe {
+      width: 100%;
+      height: 350px;
+      border: none;
       border-radius: 10px;
-      image-rendering: pixelated;
+      background: #111;
       margin-bottom: 10px;
     }
 
@@ -113,86 +111,67 @@
       margin: 0;
       color: #ffcc00;
     }
-
     .detail-box p {
       color: #ccc;
       font-size: 14px;
       margin-top: 10px;
     }
-
-    
-    .detail-knight { border-color: #00bfff; box-shadow: 0 0 25px #00bfff; }
-    .detail-mage { border-color: #b066ff; box-shadow: 0 0 25px #b066ff; }
-    .detail-archer { border-color: #00ff88; box-shadow: 0 0 25px #00ff88; }
-    .detail-robot { border-color: #bbbbbb; box-shadow: 0 0 25px #bbbbbb; }
-    .detail-assassin { border-color: #ff3333; box-shadow: 0 0 25px #ff3333; }
-    .detail-paladin { border-color: #ffd700; box-shadow: 0 0 25px #ffd700; }
-    .detail-necromancer { border-color: #9933ff; box-shadow: 0 0 25px #9933ff; }
-    .detail-cyborg { border-color: #00ffff; box-shadow: 0 0 25px #00ffff; }
-
-    @media (max-width: 768px) {
-      .container { flex-direction: column; }
-      .character-grid { grid-template-columns: repeat(2, 1fr); }
-      .character { width: 100px; height: 120px; }
-    }
   </style>
 </head>
 <body>
+
+  <!-- 🔥 VIDEO DE FONDO 🔥 -->
+  <video id="video-bg" autoplay muted loop>
+    <source src="Fondooo.mp4" type="video/mp4" />
+  </video>
+
   <h1>Selección de Personaje</h1>
 
   <div class="container">
-    
     <div class="character-grid" id="characterGrid"></div>
 
-    
     <div class="detail-box" id="characterDetail">
       <h2 id="charName">Selecciona un personaje</h2>
-      <img id="charImage" src="https://via.placeholder.com/300x200?text=Selecciona+un+personaje" alt="">
+
+      <iframe id="charModel" allowfullscreen mozallowfullscreen="true" webkitallowfullscreen="true"></iframe>
+
       <p id="charLore">Aquí aparecerá la descripción del personaje.</p>
     </div>
   </div>
 
   <script>
     const personajes = [
-      { nombre: "Hanzo", imagen: "Hanzo.png", lore: "Cuando el padre de Hanzo falleció, este tuvo que encargarse de guiar al clan ninja Shimada. Los miembros más ancianos lo instaron a meter en vereda a su hermano Genji, lo que provocó un enfrentamiento que acabó con la vida de Genji. Horrorizado, Hanzo abandonó el clan y se dedicó a recorrer el mundo solo a modo de castigo. Sin embargo, Hanzo ha descubierto que Genji sigue vivo, así que le toca decidir cuál será su siguiente paso..", clase: "knight" },
-      { nombre: "Ana", imagen: "Ana.png", lore: "Ana Amari, una de las fundadoras de Overwatch y conocida como la mejor francotiradora del mundo en su día, proviene de un extenso linaje de militares veteranos condecorados. Se creyó que había muerto en un tiroteo con Talon, pero reapareció para proteger a su país, su familia y sus aliados más cercanos.", clase: "mage" },
-      { nombre: "McCree", imagen: "Mcreee.png", lore: "McCree fue uno de los fundadores de la infame banda Deadlock, pero lo obligaron a unirse a Blackwatch, la división de operaciones encubiertas de Overwatch. Creía que podría enmendar su pasado luchando contra las injusticias del mundo; pero, cuando Overwatch desapareció, tocó fondo. Con el tiempo, eso sí, resurgió como mercenario para luchar solo por las causas que consideraba justas.", clase: "archer" },
-      { nombre: "Ramatra", imagen: "Rmatra.png", lore: "Nada impedirá que el brutal líder de Null Sector haga realidad su visión del mundo..", clase: "robot" },
-      { nombre: "RoadHog", imagen: "Roadhog.png", lore: "Roadhog es un asesino enmascarado despiadado con reputación de destruirlo todo a su paso. Recorre el desierto australiano irradiado y repleto de escombros con el único socio que se le conoce: Junkrat, un joven criminal perturbado chatarrero, y nadie entiende por qué lo hace..", clase: "assassin" },
-      { nombre: "Winton", imagen: "Winton.png", lore: "Winston es un gorila mejorado con ingeniería genética superinteligente y apacible, además de un científico brillante y un campeón poderosísimo. Tras escapar de la Colonia Lunar Horizon, Winston encontró cobijo en Overwatch y se convirtió en el héroe que siempre quiso ser... hasta la caída de Overwatch. Ahora que el mundo se enfrenta a la creciente amenaza de Null Sector, Winston ha reunido a algunos de sus antiguos aliados. Ha nacido un nuevo Overwatch.", clase: "paladin" },
-      { nombre: "Zenyatta", imagen: "Minolas.png", lore: "Zenyatta es un monje ómnico que recorre el mundo en busca de iluminación espiritual ayudando a todo aquel con quien se topa a superar sus problemas personales y encontrar la paz interior. Si es necesario, eso sí, luchará para proteger a los inocentes, ya sean ómnicos o humanos. Se dice que todo aquel que se lo encuentra por el camino nunca vuelve a ser el mismo.", clase: "necromancer" },
-      { nombre: "Reaper", imagen: "Repear.png", lore: "Gabriel Reyes fue un importante miembro de Overwatch, primero como comandante; luego, como líder de Blackwatch, la filial de Overwatch para operaciones encubiertas. Se le dio por muerto tras una explosión en la sede de la organización, pero se rumorea que burló a su destino y que se ha convertido en el colérico asesino conocido como «Reaper», uno de los agentes más letales de Talon..", clase: "cyborg" }
+      { nombre: "Hanzo", imagen: "Hanzo.png", modelo: "7w7pAfr2a4d7", lore: "Lore de Hanzo..." },
+      { nombre: "Ana", imagen: "Ana.png", modelo: "9aa1bcwva32x", lore: "Lore de Ana..." },
+      { nombre: "McCree", imagen: "Mcreee.png", modelo: "ae4a622a89da45478bea4593d819984a", lore: "Lore de McCree..." },
+      { nombre: "Ramatra", imagen: "Rmatra.png", modelo: "88ffa12sx9", lore: "Lore de Ramatra..." },
+      { nombre: "RoadHog", imagen: "Roadhog.png", modelo: "a27d5167f22b4421a4044adc580446bd", lore: "Lore de Roadhog..." },
+      { nombre: "Winton", imagen: "Winton.png", modelo: "asd1299asd", lore: "Lore de Winton..." },
+      { nombre: "Zenyatta", imagen: "Minolas.png", modelo: "99xas12xz1", lore: "Lore de Zenyatta..." },
+      { nombre: "Reaper", imagen: "Repear.png", modelo: "129as12as", lore: "Lore de Reaper..." }
     ];
 
     const grid = document.getElementById("characterGrid");
-    const detailBox = document.getElementById("characterDetail");
     const detailName = document.getElementById("charName");
-    const detailImg = document.getElementById("charImage");
+    const detailModel = document.getElementById("charModel");
     const detailLore = document.getElementById("charLore");
 
     personajes.forEach((p) => {
       const div = document.createElement("div");
-      div.classList.add("character", p.clase);
-      div.innerHTML = `<img src="${p.imagen}" alt="${p.nombre}"><p>${p.nombre}</p>`;
-      
+      div.classList.add("character");
+      div.innerHTML = `<img src="${p.imagen}"><p>${p.nombre}</p>`;
+
       div.addEventListener("click", () => {
         document.querySelectorAll(".character").forEach(c => c.classList.remove("selected"));
         div.classList.add("selected");
 
         detailName.textContent = p.nombre;
-        detailImg.src = p.imagen;
         detailLore.textContent = p.lore;
-
-        
-        detailBox.className = "detail-box";
-        detailBox.classList.add(`detail-${p.clase}`);
+        detailModel.src = `https://sketchfab.com/models/${p.modelo}/embed?ui_infos=0&ui_stop=0&ui_watermark=0`;
       });
-      
+
       grid.appendChild(div);
     });
-
-
-    document.querySelector(".character")?.click();
   </script>
 </body>
 </html>
